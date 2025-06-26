@@ -303,13 +303,30 @@ const questions = [
 
 let currentQuestionIndex = 0;
 let userAnswers = [];
+let questionAttempts = [];
+let totalAttempts = 0;
 let score = 0;
+let currentAttempt = 0;
+let selectedOption = null;
+let isAnswered = false;
 
 function initQuiz() {
     currentQuestionIndex = 0;
     userAnswers = [];
+    questionAttempts = [];
+    totalAttempts = 0;
     score = 0;
+    currentAttempt = 0;
+    selectedOption = null;
+    isAnswered = false;
+
     document.getElementById('totalQuestions').textContent = questions.length;
+
+    // Inicializar array de tentativas para cada pergunta
+    for (let i = 0; i < questions.length; i++) {
+        questionAttempts.push(0);
+    }
+
     showQuestion();
     updateProgress();
     updateNavigationButtons();
@@ -319,27 +336,59 @@ function showQuestion() {
     const question = questions[currentQuestionIndex];
     document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
     document.getElementById('questionTitle').textContent = question.question;
-    
+
+    // Atualizar contador de tentativas
+    currentAttempt = questionAttempts[currentQuestionIndex];
+    document.getElementById('attemptCount').textContent = currentAttempt;
+
     const optionsContainer = document.getElementById('optionsContainer');
     optionsContainer.innerHTML = '';
-    
+
+    // Resetar estado da pergunta se ainda não foi respondida
+    if (userAnswers[currentQuestionIndex] === undefined) {
+        selectedOption = null;
+        isAnswered = false;
+        hideFeedback();
+    } else {
+        // Pergunta já foi respondida corretamente
+        isAnswered = true;
+        selectedOption = userAnswers[currentQuestionIndex];
+    }
+
     question.options.forEach((option, index) => {
         const optionElement = document.createElement('div');
         optionElement.className = 'option';
         optionElement.textContent = option;
         optionElement.onclick = () => selectOption(index);
-        
-        if (userAnswers[currentQuestionIndex] === index) {
-            optionElement.classList.add('selected');
+
+        // Se a pergunta já foi respondida corretamente, mostrar o estado final
+        if (isAnswered) {
+            optionElement.classList.add('disabled');
+            if (index === question.correct) {
+                optionElement.classList.add('correct');
+            }
+            if (index === selectedOption) {
+                optionElement.classList.add('selected');
+            }
+        } else {
+            // Pergunta ainda não foi respondida, permitir seleção
+            if (selectedOption === index) {
+                optionElement.classList.add('selected');
+            }
         }
-        
+
         optionsContainer.appendChild(optionElement);
     });
+
+    updateNavigationButtons();
 }
 
 function selectOption(optionIndex) {
-    userAnswers[currentQuestionIndex] = optionIndex;
-    
+    // Não permitir seleção se a pergunta já foi respondida
+    if (isAnswered) return;
+
+    selectedOption = optionIndex;
+
     const options = document.querySelectorAll('.option');
     options.forEach((option, index) => {
         option.classList.remove('selected');
@@ -347,8 +396,69 @@ function selectOption(optionIndex) {
             option.classList.add('selected');
         }
     });
-    
+
     updateNavigationButtons();
+}
+
+function confirmAnswer() {
+    if (selectedOption === null || isAnswered) return;
+
+    const question = questions[currentQuestionIndex];
+    const isCorrect = selectedOption === question.correct;
+
+    // Incrementar tentativas
+    questionAttempts[currentQuestionIndex]++;
+    totalAttempts++;
+    currentAttempt = questionAttempts[currentQuestionIndex];
+    document.getElementById('attemptCount').textContent = currentAttempt;
+
+    const options = document.querySelectorAll('.option');
+
+    if (isCorrect) {
+        // Resposta correta
+        userAnswers[currentQuestionIndex] = selectedOption;
+        isAnswered = true;
+
+        // Adicionar classe correct à opção selecionada
+        options[selectedOption].classList.add('correct');
+
+        // Mostrar feedback positivo
+        showFeedback('Correto! Muito bem!', 'correct');
+
+        // Desabilitar todas as opções
+        options.forEach(option => {
+            option.classList.add('disabled');
+        });
+
+    } else {
+        // Resposta incorreta
+        options[selectedOption].classList.add('incorrect');
+
+        // Mostrar feedback negativo
+        showFeedback('Resposta incorreta. Tente novamente!', 'incorrect');
+
+        // Remover seleção após um tempo para permitir nova tentativa
+        setTimeout(() => {
+            options[selectedOption].classList.remove('incorrect', 'selected');
+            selectedOption = null;
+            hideFeedback();
+            updateNavigationButtons();
+        }, 2000);
+    }
+
+    updateNavigationButtons();
+}
+
+function showFeedback(message, type) {
+    const feedbackElement = document.getElementById('feedbackMessage');
+    feedbackElement.textContent = message;
+    feedbackElement.className = `feedback-message ${type}`;
+    feedbackElement.style.display = 'block';
+}
+
+function hideFeedback() {
+    const feedbackElement = document.getElementById('feedbackMessage');
+    feedbackElement.style.display = 'none';
 }
 
 function nextQuestion() {
@@ -356,7 +466,6 @@ function nextQuestion() {
         currentQuestionIndex++;
         showQuestion();
         updateProgress();
-        updateNavigationButtons();
     }
 }
 
@@ -365,7 +474,6 @@ function previousQuestion() {
         currentQuestionIndex--;
         showQuestion();
         updateProgress();
-        updateNavigationButtons();
     }
 }
 
@@ -376,16 +484,30 @@ function updateProgress() {
 
 function updateNavigationButtons() {
     const prevBtn = document.getElementById('prevBtn');
+    const confirmBtn = document.getElementById('confirmBtn');
     const nextBtn = document.getElementById('nextBtn');
     const finishBtn = document.getElementById('finishBtn');
-    
+
+    // Botão anterior
     prevBtn.disabled = currentQuestionIndex === 0;
-    
-    if (currentQuestionIndex === questions.length - 1) {
-        nextBtn.style.display = 'none';
-        finishBtn.style.display = 'inline-block';
+
+    // Botão confirmar
+    confirmBtn.disabled = selectedOption === null || isAnswered;
+
+    // Mostrar botão próxima apenas se a pergunta foi respondida
+    if (isAnswered) {
+        confirmBtn.style.display = 'none';
+
+        if (currentQuestionIndex === questions.length - 1) {
+            nextBtn.style.display = 'none';
+            finishBtn.style.display = 'inline-block';
+        } else {
+            nextBtn.style.display = 'inline-block';
+            finishBtn.style.display = 'none';
+        }
     } else {
-        nextBtn.style.display = 'inline-block';
+        confirmBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'none';
         finishBtn.style.display = 'none';
     }
 }
@@ -396,23 +518,19 @@ function finishQuiz() {
 }
 
 function calculateScore() {
-    score = 0;
-    userAnswers.forEach((answer, index) => {
-        if (answer === questions[index].correct) {
-            score++;
-        }
-    });
+    score = userAnswers.length; // Número de perguntas respondidas corretamente
 }
 
 function showResults() {
     document.getElementById('questionCard').style.display = 'none';
     document.getElementById('resultCard').style.display = 'block';
-    
+
     const percentage = Math.round((score / questions.length) * 100);
     document.getElementById('scorePercentage').textContent = percentage + '%';
     document.getElementById('correctAnswers').textContent = score;
     document.getElementById('wrongAnswers').textContent = questions.length - score;
-    
+    document.getElementById('totalAttempts').textContent = totalAttempts;
+
     let scoreText = '';
     if (percentage >= 90) {
         scoreText = 'Excelente! Você domina os padrões de projeto!';
@@ -423,7 +541,7 @@ function showResults() {
     } else {
         scoreText = 'Precisa estudar mais. Não desista!';
     }
-    
+
     document.getElementById('scoreText').textContent = scoreText;
 }
 

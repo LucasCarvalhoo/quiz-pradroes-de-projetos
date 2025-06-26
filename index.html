@@ -21,12 +21,23 @@
         <main class="quiz-container">
             <div class="question-card" id="questionCard">
                 <h2 class="question-title" id="questionTitle"></h2>
+
+                <div class="attempts-counter" id="attemptsCounter">
+                    Tentativas: <span id="attemptCount">0</span>
+                </div>
+
                 <div class="options-container" id="optionsContainer"></div>
-                
+
+                <div class="feedback-message" id="feedbackMessage"></div>
+
                 <div class="navigation-buttons">
                     <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()">Anterior</button>
-                    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Próxima</button>
-                    <button class="btn btn-success" id="finishBtn" onclick="finishQuiz()" style="display: none;">Finalizar</button>
+                    <button class="btn btn-warning" id="confirmBtn" onclick="confirmAnswer()" disabled>Confirmar
+                        Resposta</button>
+                    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()"
+                        style="display: none;">Próxima</button>
+                    <button class="btn btn-success" id="finishBtn" onclick="finishQuiz()"
+                        style="display: none;">Finalizar</button>
                 </div>
             </div>
 
@@ -42,12 +53,13 @@
                     <p>Acertos: <span id="correctAnswers">0</span></p>
                     <p>Erros: <span id="wrongAnswers">0</span></p>
                     <p>Total: <span id="totalAnswers">30</span></p>
+                    <p>Total de Tentativas: <span id="totalAttempts">0</span></p>
                 </div>
                 <button class="btn btn-primary" onclick="restartQuiz()">Refazer Quiz</button>
             </div>
         </main>
     </div>
-
     <script src="./js/main.js"></script>
 </body>
+
 </html>
