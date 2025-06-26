@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - Padrões de Projeto</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Quiz - Padrões de Projeto</h1>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="question-counter">
+                <span id="currentQuestion">1</span> / <span id="totalQuestions">30</span>
+            </div>
+        </header>
+
+        <main class="quiz-container">
+            <div class="question-card" id="questionCard">
+                <h2 class="question-title" id="questionTitle"></h2>
+                <div class="options-container" id="optionsContainer"></div>
+                
+                <div class="navigation-buttons">
+                    <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()">Anterior</button>
+                    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Próxima</button>
+                    <button class="btn btn-success" id="finishBtn" onclick="finishQuiz()" style="display: none;">Finalizar</button>
+                </div>
+            </div>
+
+            <div class="result-card" id="resultCard" style="display: none;">
+                <h2>Resultado Final</h2>
+                <div class="score-display">
+                    <div class="score-circle">
+                        <span id="scorePercentage">0%</span>
+                    </div>
+                    <p id="scoreText"></p>
+                </div>
+                <div class="score-details">
+                    <p>Acertos: <span id="correctAnswers">0</span></p>
+                    <p>Erros: <span id="wrongAnswers">0</span></p>
+                    <p>Total: <span id="totalAnswers">30</span></p>
+                </div>
+                <button class="btn btn-primary" onclick="restartQuiz()">Refazer Quiz</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="./js/main.js"></script>
+</body>
+</html>
